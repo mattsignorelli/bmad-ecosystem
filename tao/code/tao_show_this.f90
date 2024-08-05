@@ -26,7 +26,7 @@ use opti_de_mod, only: opti_de_param
 use wall3d_mod, only: calc_wall_radius
 use twiss_and_track_mod, only: twiss_and_track_at_s
 use ptc_spin, only: c_linear_map, assignment(=)
-use pointer_lattice, only: operator(.sub.), operator(**), operator(*), alloc, kill, print, ci_phasor, assignment(=)
+use pointer_lattice, only: operator(.sub.), operator(**), operator(*), alloc, kill, print, ci_phasor, c_phasor, assignment(=)
 use ptc_layout_mod, only: ptc_emit_calc, lat_to_ptc_layout, type_ptc_fibre, assignment(=)
 use ptc_map_with_radiation_mod, only: ptc_rad_map_struct, ptc_setup_map_with_radiation, tree_element_zhe
 use photon_target_mod, only: to_surface_coords
@@ -190,13 +190,14 @@ integer eval_pt, n_count, print_field, nt
 integer, allocatable :: ix_c(:), ix_remove(:)
 
 logical bmad_format, good_opt_only, print_wall, show_lost, logic, aligned, undef_uses_column_format, print_debug
-logical err, found, first_time, by_s, print_header_lines, all_lat, limited, show_labels, do_calc, flip, show_energy
+logical err, found, first_time, by_s, print_header_lines, all_lat, limited, show_labels, do_calc, flip, show_energy,
 logical show_sym, show_line, show_shape, print_data, ok, print_tail_lines, print_slaves, print_super_slaves
 logical show_all, name_found, print_taylor, print_rad, print_attributes, err_flag, angle_units, map_calc
-logical print_ptc, called_from_python_cmd, print_eigen, show_mat, show_q, print_rms
+logical print_ptc, called_from_python_cmd, print_eigen, show_mat, show_q, print_rms, phasor
 logical valid_value, print_floor, show_section, is_complex, print_header, print_by_uni, do_field, delim_found
 logical, allocatable :: picked_uni(:), valid(:), picked2(:)
 logical, allocatable :: picked_ele(:)
+
 
 namelist / custom_show_list / column, col
 
@@ -876,7 +877,6 @@ case ('chromaticity')
     call alloc(ptc_ctaylor)
 
     do i = 1, 3
-        ! ptc_ctaylor = ptc_nf%spin_tune * ci_phasor() * ptc_nf%normal_form%atot**(-1)
       ptc_ctaylor = ptc_nf%phase(i) * ci_phasor() * ptc_nf%normal_form%atot**(-1)
       bmad_ctaylor = ptc_ctaylor
       nl=nl+1; lines(nl) = ''
@@ -885,10 +885,6 @@ case ('chromaticity')
       if (size(lines) < nl+n+100) call re_allocate (lines, nl+n+100, .false.)
       lines(nl+1:nl+n) = alloc_lines(1:n)
       nl = nl + n
-
-      !if (i == 4 .and. .not. associated(bmad_ctaylor%term) .and. .not. bmad_com%spin_tracking_on) then
-      !  nl=nl+1; lines(nl) = 'Spin tracking is turned on with: "set bmad_com spin_tracking_on = T".'
-      !endif
     enddo
 
     call kill(ptc_ctaylor)
@@ -4453,11 +4449,12 @@ case ('spin')
   flip = .false.
   excite_zero = ''
   veto = ''
+  phasor = .false.
 
   do
     call tao_next_switch (what2, [character(24):: '-element', '-n_axis', '-l_axis', &
                             '-g_map', '-flip_n_axis', '-x_zero', '-y_zero', &
-                            '-z_zero', '-ignore_kinetic', '-isf', '-spin_tune'], .true., switch, err)
+                            '-z_zero', '-ignore_kinetic', '-isf', '-tune', '-phasor'], .true., switch, err)
     if (err) return
 
     select case (switch)
@@ -4477,8 +4474,10 @@ case ('spin')
       flip = .true.
     case ('-isf')
       what_to_show = 'isf'
-    case ('-spin_tune')
-      what_to_show = 'spin_tune'
+    case ('-tune')
+      what_to_show = 'tune'
+    case ('-phasor')
+      phasor = .true.
     case ('-n_axis')
       read (what2, *, iostat = ios) sm%axis_input%n0
       if (ios /= 0) then
@@ -4533,14 +4532,19 @@ case ('spin')
 
     ptc_nf  => tao_branch%ptc_normal_form
     do i = 1, 3
-      ctaylor(i) = ptc_nf%isf%x(i)
+    if phasor then
+    elseif
+      ctaylor(i) = ptc_nf%isf%x(i) * 
+    endif
+    inv(c)*inv(a)*
+    n(x) -> n
     enddo
 
     call type_complex_taylors(ctaylor, out_type = 'SPIN')
     return
   endif
   
-  if (what_to_show == 'spin_tune') then
+  if (what_to_show == 'tune') then
     if (branch%param%geometry == open$) then
       nl=nl+1; lines(nl) = 'No spin tune for an open lattice!'
       return
@@ -4550,7 +4554,11 @@ case ('spin')
     if (.not. u%calc%one_turn_map) call tao_ptc_normal_form (.true., u%model, branch%ix_branch)
 
     ptc_nf  => tao_branch%ptc_normal_form
-    ctaylor1 = ptc_nf%spin_tune
+    if phasor then
+      ctaylor1 = ptc_nf%spin_tune
+    elseif
+      ctaylor1 = ptc_nf%spin_tune * ci_phasor() * ptc_nf%normal_form%atot**(-1)  ! nu(inv(c(inv(a)))) exiting circle then exiting phasors
+    endif
 
     call type_complex_taylors([ctaylor1], out_type = 'NONE')
     return   

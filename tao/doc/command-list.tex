@@ -3067,10 +3067,10 @@ The \vn{-isf} switch, if present, will print the invariant spin field which are 
 for the three components of the spin $(S_x, S_y, S_z)$. The independent variables are the six orbital
 phase space coordinates $(x, p_x, y, p_y, z, p_z)$.
 
-The \vn{-spin_tune} switch, if present, will print the amplitude-dependent spin tune. The output will 
-be a Taylor series in the phasor's basis, i.e. $x_k = sqrt(J_k)*exp(i*phi_k)$. For example the 
+The \vn{-tune} switch, if present, will print the amplitude-dependent spin tune. The output will 
+be a Taylor series in the phasor's basis, i.e. $x_k = \sqrt{J_k}\exp{(i\cdot phi_k)}$. For example the 
 monomial ``[1 1 0 0 0 0]'' corresponds to $J_a$, and if RF is on then ``[1 1 2 2 3 3]'' corresponds 
-to $J_a*J_b^2*J_c^3$.
+to $J_a \cdot J_b^2 \cdot J_c^3$.
 
 The \vn{-x_zero}, \vn{-y_zero}, and \vn{-z_zero} options are for testing if supressing certain terms
 in the linear part of the spin transport map for a set of elements selected by the user will

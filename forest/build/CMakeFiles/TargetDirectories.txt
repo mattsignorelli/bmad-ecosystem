@@ -1,0 +1,3 @@
+/Users/mgs255/Software/bmad/bmad-ecosystem/forest/build/CMakeFiles/forest.dir
+/Users/mgs255/Software/bmad/bmad-ecosystem/forest/build/CMakeFiles/edit_cache.dir
+/Users/mgs255/Software/bmad/bmad-ecosystem/forest/build/CMakeFiles/rebuild_cache.dir

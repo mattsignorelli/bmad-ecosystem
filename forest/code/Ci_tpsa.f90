@@ -12576,28 +12576,34 @@ end subroutine c_full_factorise
   real(dp) alpha,cosalpha,sinalpha,tone
   type(c_damap) id
  
-q0=m_in%q.sub.0
+q0=m_in%q.sub.0 ! get 0th order part
  
          as=1
 
 q1=q0
-q1%x(0)=0.0_dp
+q1%x(0)=0.0_dp ! get only vector part of zeroth order part
 qs=1.0_dp/sqrt(q1%x(1)**2+q1%x(2)**2+q1%x(3)**2)
+
+! normalize it (so this is n0)
+
  
  
-q1=q1*qs   ! q1=n
+q1=q1*qs   ! q1=n0
  
 e_y=0.0_dp
 e_y%x(2)=1.0_dp
 !call print(e_y)
 !pause 5 
+! n0 = (0, n0)
+! e_y is pure quaternion (0, 0, 1 ,0) representing vertical
 
-q3=q1*e_y
+q3=q1*e_y  ! q3 = (-n0_2, -n0_3, 0, n0_1)
 !call print(q3)
+
 
 q3%x(0:3)=q3%x(0:3)/sqrt(q3%x(0)**2+q3%x(1)**2+q3%x(2)**2+q3%x(3)**2)
 !pause 6 
- ! q3 =-n.j + n x j . l
+ ! q3 = (-n.j, n x j)
 
 cosalpha=-q3%x(0)
 
@@ -12654,6 +12660,9 @@ q0=m_out%q
 
 alpha=2*atan2(q0%x(2),q0%x(0))
  
+
+! Calculates the quaternion to make the m_in quaternion point up (be 
+! rotation around vertical)
 
 
  end  subroutine c_normal_spin_linear_quaternion
@@ -13071,7 +13080,7 @@ end subroutine c_stochastic_kick
     implicit none
     logical(lp) removeit
     integer i,k,n,je(:),t1,t2,j,kr,ms(:),m(:,:)
-
+!write(*,*) "HELLOO???????????????????????"
      
     removeit=my_true
     t1=0;    t2=0;
@@ -13092,6 +13101,7 @@ end subroutine c_stochastic_kick
 !         t1=t1+iabs(ms(kr))
 !         t2=t2+iabs(ms(kr))
 !        endif
+    !write(*,*) " spin_tune_def = ", spin_def_tune
 if(spin_def_tune==-1) then
        if(k==1) then
         if(ms(kr)>0) then
@@ -13105,7 +13115,9 @@ if(spin_def_tune==-1) then
         elseif(ms(kr)<0) then
            if(t2==0) removeit=my_false
         endif
-        else
+        else  ! vertical would only be resonance if orbital resonance
+          ! so we check if this is only an orbital resonance
+          
          t1=t1+iabs(ms(kr))
          t2=t2+iabs(ms(kr))
           if(t1==0.or.t2==0) removeit=my_false
@@ -22305,6 +22317,10 @@ endif
 
     ! Does the the diagonalisation into a rotation
     call c_linear_a(m1,a2)  
+
+    call c_fast_canonise(a2,a2,dospin=.true.)
+    !call print(a2)
+    !stop
  
  
   
@@ -22407,7 +22423,7 @@ endif
             n%g%f(i)%v(k)=n%g%f(i)%v(k)+(v.cmono.je)/(1.0_dp-lam)
 
           else ! Put in the kernel
-
+            write(*,*) "keeping monomial ", je(1:4), ", v = ", v
             if(lielib_print(13)/=0) then
                je(k)=je(k)-1
                write(mker,*) k
@@ -22420,6 +22436,7 @@ endif
             endif
 
         enddo  ! over monomial
+        write(*,*) "======================================================="
       enddo  ! over vector index
 
       m1=c_simil(n%g%f(i),m1,-1)
@@ -22515,16 +22532,22 @@ endif
 
 if(use_quaternion)then
 
+  ! rotate quaternion to point up
       call c_normal_spin_linear_quaternion(m1,m1,n%AS,alpha)
 
+      ! store quaternion angle, unimportant but store in NF
       n%quaternion_angle=alpha/2.0_dp
-      ri=1 ; ri%q=m1%q.sub.0 ; ! exp(theta_0 L_y)   (2)
+  ! vertical in zeroth order part:
+      ri=1 ; ri%q=m1%q.sub.0 ; ! exp(theta_0 L_y)   (2)  
+
 !      sx=sqrt(ri%q%x(1)**2+ri%q%x(2)**2+ri%q%x(3)**2)
 !      cx=ri%q%x(0)
 !write(6,*) alpha
 !      alpha=-(-2*atan2(sx,cx))
 !write(6,*) alpha
 !pause 723
+
+      ! rotations
       egspin(3)=cos(alpha)-i_*sin(alpha)
       egspin(2)=1.0_dp
       egspin(1)=cos(alpha)+i_*sin(alpha) 
@@ -22537,7 +22560,9 @@ else
 endif
  
  
-
+write(*,*) "egspin(1) = ", egspin(1)
+write(*,*) "egspin(2) = ", egspin(2)
+write(*,*) "egspin(3) = ", egspin(3)
 
 
  
@@ -22570,8 +22595,10 @@ endif
   
  
       ! because  exp(a L_y) x = x- a z + O(a**2)
+       ! ri is identity in orbital and zeroth order rotation around
+       ! vertical in quaternion
        ri=ri**(-1) ! exp(-alpha_0 L_y)   (3)
-
+! m1 is normalized!!!!!
 
 if(use_quaternion)then
        nonl=m1.sub.1 ; nonl%q=1.0_dp ;nonl=nonl**(-1)  ! R_0^-1      (4)  
@@ -22579,7 +22606,7 @@ else
      nonl=m1.sub.1 ; nonl%s=1 ;nonl=nonl**(-1)  ! R_0^-1      (4)  
 endif
 !       nonl=m1.sub.1 ; nonl%s=1 ;nonl=nonl**(-1)  ! R_0^-1      (4)          
-        
+
 
        do i=1,no    !+2
           if(lielib_print(13)/=0) then
@@ -22590,10 +22617,15 @@ endif
           endif
   
  
-         
+         ! m1 has already been rotated to be around j
           mt=m1*ri !  S*exp(-theta_0 L_y)    (5)
- 
- 
+            !call print(mt)
+            !stop      
+!write(*,*)" ----------------> ", c_%no
+          !call print(m1)
+          !stop
+ ! leaves 1st, 2nd, ..terms
+ ! total map removing 
 if(use_quaternion)then
        n0=mt%q
 else
@@ -22603,10 +22635,12 @@ endif
            call c_n0_to_nr(n0,n0)   ! n0 = > eigen-operator of spin   (7)
  
  
- 
+ ! transform orbital dependence of spin with rotation !!!
           n0=n0*nonl               !  no * R^-1      (8)
- 
+          !!call print(n0)
+          !stop
 
+! transform 3 taylor series by rotation (phase advancing it)
           nr=0
           
           do k=1,3
@@ -22621,10 +22655,14 @@ endif
             
             j=1
             do while(.true.) 
-              call  c_cycle(n0%v(k),j,v ,je); if(j==0) exit;
-              call check_kernel_spin1(k,xy%n,je,da,removeit)
+              call  c_cycle(n0%v(k),j,v ,je); if(j==0) exit; 
+              call check_kernel_spin1(k,xy%n,je,da,removeit) ! da is for damping - its the real part of the orbital eigenvalues
+              !write(*,*) "checking1"
               if(n%nres>0.and.removeit) then 
+                !write(*,*) "im in here ==================="
+                !stop
                 do kr=1,n%nres
+                  !write(*,*) "checking"
                   call check_resonance_spin(k,xy%n,je,kr,n%ms,n%m,removeit)
                   if(.not.removeit) then
                     exit
@@ -22633,6 +22671,7 @@ endif
               endif
                 
               if(removeit) then
+                
                 lam=egspin(k) 
                 do l=1,xy%n 
                   if(coast(l)) cycle 
@@ -22653,6 +22692,7 @@ endif
                 endif
               nr%v(k)=nr%v(k) +(v.cmono.je)/(1.0_dp-lam)   ! (9)
             else
+              write(*,*) "Keeping monomial ", je(1:4), ", v = ", v
               if(lielib_print(13)/=0) then 
                 do kr=1,nd2
                   je(kr)=-(-1)**kr*je(kr)
@@ -22665,19 +22705,20 @@ endif
               endif
             endif
           enddo ! cycle
+          write(*,*) "==========================================="
         enddo ! k
- 
 
         call c_nr_to_n0(nr,nr)  !   (10)
  
 
- 
  
 
 if(use_quaternion)then
 qnr=nr
  AS=1 ; 
 AS%q=exp(qnr)
+!call print(AS)
+!stop
 else
       AS=1 ; AS%s=exp(nr)*AS%s 
 endif
@@ -22687,13 +22728,21 @@ endif
 
         n%AS=n%AS*AS             ! (12)
  
-
+  !call print(n%AS)
+  !stop
  
         m1=c_simil(AS,m1,-1) 
-  
+
 
        enddo
 
+!write(*,*) "here"
+!       call print(n%AS)
+!write(*,*) " here?"
+!       stop
+
+       !call print(n%AS)
+       !stop
       n%AS=from_phasor()*n%AS*from_phasor(-1)
  
       n%AS=n%A_t*n%AS*n%a_t**(-1)
