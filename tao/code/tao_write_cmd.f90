@@ -53,7 +53,7 @@ character(20) action, name, lat_type, which, last_col, b_name
 character(40), allocatable :: z(:)
 character(100) str
 character(200) line, switch, header1, header2, aname
-character(200) file_name0, file_name, what2
+character(400) file_name0, file_name, what2
 character(200) :: word(12)
 character(*), parameter :: r_name = 'tao_write_cmd'
 

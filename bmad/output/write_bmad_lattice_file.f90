@@ -73,7 +73,7 @@ real(rp) s0, x_lim, y_lim, val, x, y, fid
 character(*) bmad_file
 character(4000) line
 character(2000) line2
-character(200) file_name, path, basename, fname
+character(400) file_name, path, basename, fname
 character(120), allocatable :: list(:)
 character(60) alias
 character(40) name, look_for, attrib_name

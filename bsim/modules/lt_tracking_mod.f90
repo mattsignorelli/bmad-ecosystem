@@ -717,7 +717,7 @@ function ltt_per_particle_file_name (lttp, ix_bunch, ix_particle, n_bunch, n_par
 type (ltt_params_struct) lttp
 
 integer ix_bunch, ix_particle, n_bunch, n_particle, np, ih, ix
-character(200) file_name
+character(400) file_name
 character(16) fmt, str
 
 !
@@ -1577,7 +1577,7 @@ integer ip, ib, n_live_old, n_live, ix_branch
 logical err_flag
 
 character(16) prefix_str
-character(200) file_name
+character(400) file_name
 character(*), parameter :: r_name = 'ltt_run_beam_mode'
 
 ! Init
@@ -1947,7 +1947,7 @@ real(rp) n_inv_mat(6,6), jvec(6), jamp(3), jphase(3), m(6,6), vec0(6)
 integer i_turn, ix_bunch, n_bunch, j, ix, iu, ip
 logical wrote_header, error
 character(*) who, base_name
-character(200) file_name
+character(400) file_name
 character(40) str, fmt
 
 !

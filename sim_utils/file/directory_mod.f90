@@ -28,7 +28,7 @@ implicit none
 
 character(*) dir_name
 character(*), allocatable :: file_list(:)
-character(200) file_name
+character(400) file_name
 integer i, n
 logical ok
 

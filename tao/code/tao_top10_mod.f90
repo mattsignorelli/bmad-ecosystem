@@ -539,7 +539,7 @@ implicit none
 integer i, j, iu, iu2, ix, ios, ix_hash
 
 character(*) out_file
-character(200) file_name, file_name2
+character(400) file_name, file_name2
 character(20) :: r_name = 'tao_var_write'
 character(200) str(1)
 

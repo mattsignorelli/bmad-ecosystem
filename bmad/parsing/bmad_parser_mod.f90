@@ -322,7 +322,7 @@ integer i, ix, ios, n, n_file
 integer, pointer :: i_level
 character(*) how
 character(*), optional :: file_name_in
-character(200) file_name, basename, file_name2
+character(400) file_name, basename, file_name2
 
 logical, optional :: finished, err, open_file
 logical found_it, is_relative, valid, err_flag

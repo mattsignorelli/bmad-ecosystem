@@ -184,7 +184,7 @@ character(n_char_show), allocatable, target :: li(:)
 character(n_char_show), pointer :: li_ptr(:)
 character(n_char_show) li2
 character(300), allocatable :: name_arr(:)
-character(200) file_name, all_who, tail_str
+character(400) file_name, all_who, tail_str
 character(40) imt, jmt, rmt, lmt, amt, amt2, iamt, vamt, rmt2, ramt, cmt, label_name
 character(40) who, max_loc, ele_name, name1(40), name2(40), a_name, name, attrib_name, command
 character(40), allocatable :: str_arr(:)

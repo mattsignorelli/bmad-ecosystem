@@ -19,7 +19,7 @@ integer iu, ix, n, nl, ios
 integer :: n_write_file = 0            ! used for indexing 'show write' files
 
 character(*) what
-character(200) file_name, fname
+character(500) file_name, fname
 character(100) result_id
 character(20) switch
 character(len(what)) what2
@@ -50,6 +50,7 @@ do
     err_out = .false.
 
   case ('-append', '-write')
+    
     call tao_next_word(what2, file_name)
 
     ix = index(file_name, '*')
@@ -57,7 +58,7 @@ do
       n_write_file = n_write_file + 1
       write (file_name, '(a, i3.3, a)') file_name(1:ix-1), n_write_file, trim(file_name(ix+1:))
     endif
-
+    print *, file_name
     iu = lunget()
     call fullfilename(file_name, fname, valid)
     if (.not. valid) then

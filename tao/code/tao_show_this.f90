@@ -172,7 +172,7 @@ character(40) ele_name, ele1_name, ele2_name, ele_ref_name, b_name, param_name, 
 character(40) replacement_for_blank, component, s_fmt
 character(60) aname, myname
 character(100) :: word1, word2, fmt, fmt2, fmt3, switch, why_invalid
-character(200) header, str, attrib0, file_name, name, excite_zero(3), veto
+character(400) header, str, attrib0, file_name, name, excite_zero(3), veto
 character(200), allocatable :: alloc_lines(:)
 character(400) attrib_list(20), attrib, sub_name
 
